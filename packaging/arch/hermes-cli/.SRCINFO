@@ -11,6 +11,7 @@ pkgbase = hermes-cli
 	depends = glibc
 	depends = gcc-libs
 	depends = wl-clipboard
+	options = !lto
 	source = git+https://github.com/adityamiskin/hermes.git#tag=v0.1.0
 	sha256sums = SKIP
 

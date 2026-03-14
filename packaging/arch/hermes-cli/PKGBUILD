@@ -5,6 +5,7 @@ pkgdesc="Native speech-to-text CLI daemon"
 arch=('x86_64' 'aarch64')
 url="https://github.com/adityamiskin/hermes"
 license=('custom')
+options=('!lto')
 depends=('glibc' 'gcc-libs' 'wl-clipboard')
 makedepends=('cargo' 'git')
 source=("git+https://github.com/adityamiskin/hermes.git#tag=v${pkgver}")

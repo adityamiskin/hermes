@@ -5,6 +5,7 @@ pkgdesc="Native speech-to-text desktop app"
 arch=('x86_64' 'aarch64')
 url="https://github.com/adityamiskin/hermes"
 license=('custom')
+options=('!lto')
 depends=(
   'glibc'
   'gcc-libs'
@@ -17,8 +18,11 @@ depends=(
   'wl-clipboard'
 )
 makedepends=('bun' 'cargo' 'git')
-source=("git+https://github.com/adityamiskin/hermes.git#tag=v${pkgver}")
-sha256sums=('SKIP')
+source=(
+  "git+https://github.com/adityamiskin/hermes.git#tag=v${pkgver}"
+  "hermes-desktop.desktop"
+)
+sha256sums=('SKIP' 'SKIP')
 
 prepare() {
   cd "${srcdir}/hermes"
@@ -35,7 +39,7 @@ package() {
 
   install -Dm755 src-tauri/target/release/hermes-desktop "${pkgdir}/usr/bin/hermes-desktop"
   install -Dm644 src-tauri/icons/128x128.png "${pkgdir}/usr/share/icons/hicolor/128x128/apps/hermes.png"
-  install -Dm644 packaging/arch/hermes-desktop/hermes-desktop.desktop \
+  install -Dm644 "${srcdir}/hermes-desktop.desktop" \
     "${pkgdir}/usr/share/applications/hermes-desktop.desktop"
   install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
 }
