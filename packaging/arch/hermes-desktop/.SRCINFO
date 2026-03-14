@@ -1,0 +1,24 @@
+pkgbase = hermes-desktop
+	pkgdesc = Native speech-to-text desktop app
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/adityamiskin/hermes
+	arch = x86_64
+	arch = aarch64
+	license = custom
+	makedepends = bun
+	makedepends = cargo
+	makedepends = git
+	depends = glibc
+	depends = gcc-libs
+	depends = gtk3
+	depends = webkit2gtk-4.1
+	depends = libsoup3
+	depends = libayatana-appindicator
+	depends = librsvg
+	depends = alsa-lib
+	depends = wl-clipboard
+	source = git+https://github.com/adityamiskin/hermes.git#tag=v0.1.0
+	sha256sums = SKIP
+
+pkgname = hermes-desktop

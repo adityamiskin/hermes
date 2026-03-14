@@ -11,7 +11,9 @@ use hermes::paths::AppPaths;
 #[derive(Debug, Parser)]
 #[command(
     name = "hermes",
-    about = "Cross-platform speech-to-text daemon in Rust"
+    version,
+    about = "Native speech-to-text CLI and daemon",
+    long_about = "Hermes is a native speech-to-text engine with daemon controls, configuration management, transcription commands, and credential storage."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -20,14 +22,21 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    #[command(about = "Run the long-lived Hermes dictation daemon")]
     Daemon,
     #[command(hide = true)]
     Overlay,
+    #[command(about = "Initialize, inspect, and edit Hermes configuration")]
     Config(ConfigCommand),
+    #[command(about = "Send recording controls to the running daemon")]
     Record(RecordArgs),
+    #[command(about = "Show runtime and backend status")]
     Status,
+    #[command(about = "Validate microphone and backend initialization")]
     Validate,
+    #[command(about = "Transcribe a mono 16 kHz WAV file once")]
     Transcribe(TranscribeArgs),
+    #[command(about = "Store provider API keys in OS keychain")]
     Credentials(CredentialsArgs),
 }
 
@@ -39,17 +48,23 @@ struct RecordArgs {
 
 #[derive(Debug, Subcommand)]
 enum RecordCommand {
+    #[command(about = "Start recording")]
     Start {
-        #[arg(long = "lang")]
+        #[arg(long = "lang", help = "Temporary language override (example: en)")]
         language: Option<String>,
     },
+    #[command(about = "Stop recording and transcribe current buffer")]
     Stop,
+    #[command(about = "Submit long-form session buffer")]
     Submit,
+    #[command(about = "Cancel active recording without transcription")]
     Cancel,
+    #[command(about = "Toggle recording state")]
     Toggle {
-        #[arg(long = "lang")]
+        #[arg(long = "lang", help = "Temporary language override (example: en)")]
         language: Option<String>,
     },
+    #[command(about = "Print recording state (recording/idle)")]
     Status,
 }
 
@@ -61,30 +76,36 @@ struct ConfigCommand {
 
 #[derive(Debug, Subcommand)]
 enum ConfigAction {
+    #[command(about = "Create default config file")]
     Init,
+    #[command(about = "Print active config as JSON")]
     Show,
+    #[command(about = "Open config in your default editor")]
     Edit,
+    #[command(about = "Configure Groq REST backend and store Groq API key")]
     UseGroq {
-        #[arg(long)]
+        #[arg(long, help = "Groq API key")]
         api_key: String,
-        #[arg(long, default_value = "whisper-large-v3-turbo")]
+        #[arg(long, default_value = "whisper-large-v3-turbo", help = "Groq model id")]
         model: String,
-        #[arg(long)]
+        #[arg(long, help = "Default language code (example: en)")]
         language: Option<String>,
     },
 }
 
 #[derive(Debug, Args)]
 struct TranscribeArgs {
+    #[arg(help = "Path to mono 16 kHz WAV file")]
     file: std::path::PathBuf,
-    #[arg(long)]
+    #[arg(long, help = "Optional language override (example: en)")]
     language: Option<String>,
 }
 
 #[derive(Debug, Args)]
 struct CredentialsArgs {
+    #[arg(help = "Provider name (groq/openai/elevenlabs)")]
     provider: String,
-    #[arg(long)]
+    #[arg(long, help = "Provider API key")]
     key: String,
 }
 

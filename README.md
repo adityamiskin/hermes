@@ -112,6 +112,20 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+## Arch Linux Packages
+
+Arch packaging files are included in [packaging/arch](./packaging/arch):
+
+- `hermes-cli`
+- `hermes-desktop`
+
+Build locally with:
+
+```bash
+cd packaging/arch/hermes-cli && makepkg -si
+cd packaging/arch/hermes-desktop && makepkg -si
+```
+
 ## Notes
 
 - Linux AppImage generation may require additional host tooling.
