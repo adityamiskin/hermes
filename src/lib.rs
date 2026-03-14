@@ -10,4 +10,5 @@ pub mod longform;
 pub mod overlay;
 pub mod paths;
 pub mod realtime;
+pub mod service;
 pub mod text_injector;

@@ -70,6 +70,26 @@ cargo run -- daemon
 cargo run -- record toggle
 ```
 
+### CLI Service Management (Linux)
+
+Hermes can install and manage its own user service directly from CLI:
+
+```bash
+hermes service install --activate
+hermes service status
+```
+
+Other service commands:
+
+```bash
+hermes service start
+hermes service stop
+hermes service restart
+hermes service enable
+hermes service disable
+hermes service uninstall
+```
+
 ## Configuration and Credentials
 
 Hermes uses its own app directories:

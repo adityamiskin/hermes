@@ -8,6 +8,7 @@ use hermes::credentials;
 use hermes::ipc;
 use hermes::overlay;
 use hermes::paths::AppPaths;
+use hermes::service;
 #[derive(Debug, Parser)]
 #[command(
     name = "hermes",
@@ -38,6 +39,8 @@ enum Command {
     Transcribe(TranscribeArgs),
     #[command(about = "Store provider API keys in OS keychain")]
     Credentials(CredentialsArgs),
+    #[command(about = "Manage Hermes daemon as a user startup service")]
+    Service(ServiceArgs),
 }
 
 #[derive(Debug, Args)]
@@ -107,6 +110,39 @@ struct CredentialsArgs {
     provider: String,
     #[arg(long, help = "Provider API key")]
     key: String,
+}
+
+#[derive(Debug, Args)]
+struct ServiceArgs {
+    #[command(subcommand)]
+    action: ServiceCommand,
+}
+
+#[derive(Debug, Subcommand)]
+enum ServiceCommand {
+    #[command(about = "Install user service unit file")]
+    Install {
+        #[arg(
+            long,
+            help = "Enable and start immediately after install",
+            default_value_t = false
+        )]
+        activate: bool,
+    },
+    #[command(about = "Remove user service unit file")]
+    Uninstall,
+    #[command(about = "Enable service to start on login")]
+    Enable,
+    #[command(about = "Disable startup on login")]
+    Disable,
+    #[command(about = "Start service now")]
+    Start,
+    #[command(about = "Stop service now")]
+    Stop,
+    #[command(about = "Restart service")]
+    Restart,
+    #[command(about = "Show service enabled/active state")]
+    Status,
 }
 
 fn main() -> Result<()> {
@@ -239,6 +275,16 @@ fn main() -> Result<()> {
             credentials::save_credential(&paths, &args.provider, &args.key)?;
             println!("saved credential for {}", args.provider);
         }
+        Command::Service(command) => match command.action {
+            ServiceCommand::Install { activate } => service::install(activate)?,
+            ServiceCommand::Uninstall => service::uninstall()?,
+            ServiceCommand::Enable => service::enable()?,
+            ServiceCommand::Disable => service::disable()?,
+            ServiceCommand::Start => service::start()?,
+            ServiceCommand::Stop => service::stop()?,
+            ServiceCommand::Restart => service::restart()?,
+            ServiceCommand::Status => service::status()?,
+        },
     }
 
     Ok(())
