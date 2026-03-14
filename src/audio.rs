@@ -148,7 +148,9 @@ pub fn list_input_devices() -> Result<Vec<InputDeviceInfo>> {
             .description()
             .map(|desc| desc.name().to_string())
             .unwrap_or_else(|_| format!("Input device {index}"));
-        let is_default = default_name.as_ref().is_some_and(|default| default == &name);
+        let is_default = default_name
+            .as_ref()
+            .is_some_and(|default| default == &name);
         devices.push(InputDeviceInfo {
             id: index,
             name,
