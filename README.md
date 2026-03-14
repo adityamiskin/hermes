@@ -2,72 +2,117 @@
 
 Hermes is the Rust desktop rewrite of `hyprwhspr`.
 
-It now has two layers:
+It has two layers:
 
-- `hermes` core: audio capture, hotkeys, dictation backends, overlay, injection
-- `hermes-desktop`: a Tauri desktop shell with a React settings UI, tray menu, and packaged app output
+- `hermes` core: audio capture, hotkeys, transcription backends, overlay, and text injection.
+- `hermes-desktop`: a Tauri desktop shell with a React + shadcn settings UI and tray integration.
 
-## Desktop App
+## About
 
-The Tauri app lives in [src-tauri](./src-tauri) and the frontend lives in [src-web](./src-web).
+Hermes is built for fast dictation with a clean desktop UX:
 
-### Development
+- Global hotkey dictation toggle
+- Live mic overlay pill
+- Local and remote transcription backends
+- Secure API key storage in OS keychain
+- Tray app behavior with launch-at-login support
+
+## Features
+
+- Cross-platform desktop app (Linux, macOS, Windows) via Tauri
+- Multiple STT backends:
+- `rest-api` (Groq/OpenAI/ElevenLabs-compatible)
+- `realtime-ws` (realtime websocket transcription path)
+- `whisper-rs` (local)
+- `faster-whisper` (local runner)
+- Configurable hotkeys and recording modes (`toggle`, `push_to_talk`, `long_form`)
+- Audio device selection and clipboard/paste behavior controls
+- Provider credential management from the app UI
+
+## Project Structure
+
+- [src](./src): Rust core engine (`hermes` crate)
+- [src-tauri](./src-tauri): desktop host (`hermes-desktop` crate)
+- [src-web](./src-web): frontend UI (React + shadcn)
+- [support](./support): helper scripts (for local backend integrations)
+
+## Quick Start
+
+### Prerequisites
+
+- Rust toolchain (stable)
+- Bun
+- Linux only: Tauri system dependencies (webkit2gtk, libsoup3, etc.)
+
+### Run Dev App
 
 ```bash
 bun install
 bun run tauri dev
 ```
 
-### Build
+### Build Release App
 
 ```bash
-bun run tauri build --debug --no-bundle
+bun run tauri build
 ```
 
-### Linux Package
+Built bundles are generated under:
 
-```bash
-bun run tauri build --debug --bundles deb
-```
+- `src-tauri/target/release/bundle/`
 
-Current verified Linux package output:
+## Core CLI (Optional)
 
-- `src-tauri/target/debug/bundle/deb/Hermes_0.1.0_amd64.deb`
-
-## Core CLI
-
-The Rust core CLI still exists and is useful for testing:
+The Rust core CLI is still available for direct testing:
 
 ```bash
 cargo run -- daemon
 cargo run -- record toggle
 ```
 
-## Config
+## Configuration and Credentials
 
-Hermes uses its own app directories.
+Hermes uses its own app directories:
 
-- config: `~/.config/hermes/config.json`
-- data: `~/.local/share/hermes/`
+- Linux config: `~/.config/hermes/config.json`
+- Linux data: `~/.local/share/hermes/`
 
-Credentials are stored in the OS keychain:
+Credentials are stored in OS keychain services:
 
 - Linux: Secret Service
 - macOS: Keychain
 - Windows: Credential Manager
 
-## Current Scope
+## Auto Start
 
-- Tauri desktop shell with a real Hermes settings UI
-- in-process daemon lifecycle managed by the desktop app
-- tray menu for toggle/open/quit
-- secure provider key save flow
-- local Whisper, faster-whisper, REST STT, and realtime backend support from the Rust core
-- Linux `.deb` packaging verified locally
+Launch-at-login is supported in-app through the desktop UI:
 
-## Known Gaps
+- macOS: LaunchAgent
+- Linux: desktop autostart entry managed by plugin
+- Windows: autostart entry managed by plugin
 
-- updater feed is not wired yet
-- AppImage bundling currently needs `linuxdeploy` on the build host
-- macOS and Windows artifacts are scaffolded through Tauri but were not built on this Linux machine
-- the desktop UI is first-pass and does not expose every config field yet
+The app starts the Hermes daemon on desktop app startup.
+
+## CI/CD
+
+This repo includes GitHub Actions:
+
+- `CI` on push/PR:
+- frontend install + build
+- Rust format check
+- Rust checks for core and Tauri crates
+- `Release` on tags (`v*`):
+- builds Linux, macOS, and Windows bundles
+- uploads artifacts to GitHub Release
+
+Create a release by pushing a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+## Notes
+
+- Linux AppImage generation may require additional host tooling.
+- macOS notarization and Windows code-signing are not configured in this repo yet.
