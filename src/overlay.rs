@@ -126,9 +126,10 @@ impl eframe::App for OverlayApp {
         self.update_position(ctx);
 
         let live_level = ipc::read_audio_level(&self.paths).clamp(0.0, 1.0);
-        self.smoothed_level = self.smoothed_level * 0.72 + live_level * 0.28;
+        let visual_level = overlay_visual_level(live_level);
+        self.smoothed_level = self.smoothed_level * 0.58 + visual_level * 0.42;
         self.peak_level = (self.peak_level * 0.92).max(self.smoothed_level);
-        self.sample_level_history(self.smoothed_level.max(live_level * 0.9));
+        self.sample_level_history(self.smoothed_level.max(visual_level * 0.96));
 
         egui::CentralPanel::default()
             .frame(
@@ -141,6 +142,12 @@ impl eframe::App for OverlayApp {
                 paint_overlay(ui.painter(), rect, self.peak_level, &self.level_history);
             });
     }
+}
+
+fn overlay_visual_level(raw_level: f32) -> f32 {
+    let boosted = (raw_level * 5.4).clamp(0.0, 1.0);
+    let curved = boosted.powf(0.56);
+    if curved < 0.02 { 0.0 } else { curved }
 }
 
 fn paint_overlay(
@@ -189,8 +196,8 @@ fn paint_wave_bars(
         let distance = (index as f32 - mid).abs() / mid.max(1.0);
         let envelope = (1.0 - distance.powf(1.45)).max(0.22);
         let history_value = level_history[index.min(level_history.len() - 1)];
-        let bar_level = (history_value * 0.86 + peak_level * 0.14).clamp(0.0, 1.0);
-        let height = (2.8 + envelope * 2.0 + bar_level * envelope * 15.5).clamp(2.8, rect.height());
+        let bar_level = (history_value * 0.8 + peak_level * 0.2).clamp(0.0, 1.0);
+        let height = (3.6 + envelope * 3.2 + bar_level * envelope * 23.0).clamp(3.6, rect.height());
         let bar = Rect::from_center_size(
             Pos2::new(
                 left + index as f32 * (bar_width + gap) + bar_width * 0.5,
