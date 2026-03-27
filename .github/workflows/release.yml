@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Linux deps for Tauri build
         if: matrix.os == 'ubuntu-latest'
@@ -54,8 +56,16 @@ jobs:
       - name: Install JS deps
         run: bun install --frozen-lockfile
 
+      - name: Check release metadata
+        run: bash scripts/check-release-metadata.sh
+
       - name: Build desktop bundles
-        run: bun run tauri build
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            export CC=gcc
+            export CXX=g++
+          fi
+          bun run tauri build
 
       - name: Upload bundle artifacts
         uses: actions/upload-artifact@v4

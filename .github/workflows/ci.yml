@@ -44,6 +44,9 @@ jobs:
       - name: Install JS deps
         run: bun install --frozen-lockfile
 
+      - name: Check release metadata
+        run: bash scripts/check-release-metadata.sh
+
       - name: Build frontend
         run: bun run build
 
@@ -51,7 +54,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Rust check (core)
-        run: cargo check --all-targets
+        run: CC=gcc CXX=g++ cargo check --all-targets
 
       - name: Rust check (desktop)
-        run: cargo check --manifest-path src-tauri/Cargo.toml --all-targets
+        run: CC=gcc CXX=g++ cargo check --manifest-path src-tauri/Cargo.toml --all-targets

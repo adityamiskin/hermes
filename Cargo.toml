@@ -28,3 +28,6 @@ winit = { version = "0.30.13", features = ["x11", "wayland"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 evdev = "0.13.2"
+
+[patch.crates-io]
+keyring = { path = "vendor/keyring" }

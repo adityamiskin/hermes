@@ -4,3 +4,9 @@ node_modules/
 dist/
 .DS_Store
 *.log
+packaging/arch/hermes-cli/*.pkg.tar.zst
+packaging/arch/hermes-cli/hermes/
+packaging/arch/hermes-cli/pkg/
+packaging/arch/hermes-cli/src/
+packaging/arch/hermes-desktop/*.pkg.tar.zst
+packaging/arch/hermes-desktop/pkg/
