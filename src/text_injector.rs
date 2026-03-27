@@ -2,12 +2,12 @@ use crate::config::AppConfig;
 use anyhow::{Context, Result};
 use arboard::Clipboard;
 use enigo::{Direction, Enigo, Key, Keyboard, Settings};
+#[cfg(target_os = "linux")]
+use evdev::{AttributeSet, EventType, InputEvent, KeyCode, uinput::VirtualDevice};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
-#[cfg(target_os = "linux")]
-use evdev::{AttributeSet, EventType, InputEvent, KeyCode, uinput::VirtualDevice};
 
 const CLIPBOARD_SYNC_DELAY_MS: u64 = 15;
 #[cfg(target_os = "linux")]
@@ -49,7 +49,10 @@ impl TextInjector {
             Enigo::new(&Settings::default()).context("failed to initialize input injector")?,
         );
 
-        Ok(Self { clipboard, injector })
+        Ok(Self {
+            clipboard,
+            injector,
+        })
     }
 
     pub fn inject_text(&mut self, config: &AppConfig, text: &str) -> Result<()> {

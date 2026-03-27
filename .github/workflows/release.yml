@@ -60,6 +60,7 @@ jobs:
         run: bash scripts/check-release-metadata.sh
 
       - name: Build desktop bundles
+        shell: bash
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
             export CC=gcc
