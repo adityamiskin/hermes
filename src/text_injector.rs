@@ -9,7 +9,8 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
 
-const CLIPBOARD_SYNC_DELAY_MS: u64 = 15;
+const CLIPBOARD_SYNC_TIMEOUT_MS: u64 = 350;
+const CLIPBOARD_SYNC_RETRY_MS: u64 = 10;
 #[cfg(target_os = "linux")]
 const UINPUT_INTER_EVENT_DELAY_MS: u64 = 1;
 
@@ -63,7 +64,8 @@ impl TextInjector {
         self.clipboard
             .set_text(text)
             .context("failed to copy transcript into clipboard")?;
-        thread::sleep(Duration::from_millis(CLIPBOARD_SYNC_DELAY_MS));
+        self.clipboard
+            .wait_until_text(text, Duration::from_millis(CLIPBOARD_SYNC_TIMEOUT_MS));
         send_paste(&mut self.injector, &config.paste_mode)?;
         if config.auto_submit {
             #[cfg(target_os = "linux")]
@@ -121,6 +123,26 @@ impl ClipboardBackend {
             }
         }
     }
+
+    fn wait_until_text(&mut self, expected: &str, timeout: Duration) {
+        let deadline = std::time::Instant::now() + timeout;
+        while std::time::Instant::now() < deadline {
+            match self.read_text() {
+                Ok(actual) if actual == expected => return,
+                _ => thread::sleep(Duration::from_millis(CLIPBOARD_SYNC_RETRY_MS)),
+            }
+        }
+    }
+
+    fn read_text(&mut self) -> Result<String> {
+        match self {
+            Self::Arboard(clipboard) => clipboard
+                .get_text()
+                .context("failed to read clipboard text via arboard"),
+            #[cfg(target_os = "linux")]
+            Self::WaylandCopy => _read_wayland_clipboard(),
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -141,6 +163,7 @@ fn set_wayland_clipboard(text: &str) -> Result<()> {
     }
 
     let mut child = Command::new("wl-copy")
+        .arg("--foreground")
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stderr(Stdio::piped())
@@ -165,7 +188,16 @@ fn set_wayland_clipboard(text: &str) -> Result<()> {
         .lock()
         .map_err(|_| anyhow::anyhow!("clipboard child lock poisoned"))?;
     *slot = Some(child);
-    Ok(())
+
+    let deadline = std::time::Instant::now() + Duration::from_millis(CLIPBOARD_SYNC_TIMEOUT_MS);
+    while std::time::Instant::now() < deadline {
+        match _read_wayland_clipboard() {
+            Ok(actual) if actual == text => return Ok(()),
+            _ => thread::sleep(Duration::from_millis(CLIPBOARD_SYNC_RETRY_MS)),
+        }
+    }
+
+    anyhow::bail!("wl-copy did not publish the expected clipboard contents in time")
 }
 
 #[cfg(target_os = "linux")]
